@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "abstractNN"
-version = "0.1.0"
+version = "0.1.1"
 description = "Formal verification of neural networks using abstract interpretation and affine arithmetic"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -34,8 +34,8 @@ classifiers = [
 [project.urls]
 Homepage = "https://github.com/guillaume117/abstractNN"
 Documentation = "https://abstractnn.readthedocs.io"
-Repository = "https://github.com/flyworthi/abstractNN"
-"Bug Tracker" = "https://github.com/flyworthi/abstractNN/issues"
+Repository = "https://github.com/guillaum117/abstractNN"
+"Bug Tracker" = "https://github.com/guillaume117/abstractNN/issues"
 
 [project.scripts]
 abstractnn-verify = "abstractnn.cli:verify"
