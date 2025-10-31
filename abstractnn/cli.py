@@ -160,7 +160,7 @@ Documentation:
   https://abstractnn.readthedocs.io
 
 GitHub:
-  https://github.com/flyworthi/abstractNN
+  https://github.com/guillaume117/abstractNN
 
 Quick Start:
   from abstractnn import AffineEngine, BoundPropagator, ONNXParser

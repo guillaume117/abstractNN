@@ -29,9 +29,9 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/flyworthi/abstractNN",
     project_urls={
-        "Bug Tracker": "https://github.com/flyworthi/abstractNN/issues",
+        "Bug Tracker": "https://github.com/guillaume117/abstractNN/issues",
         "Documentation": "https://abstractnn.readthedocs.io",
-        "Source Code": "https://github.com/flyworthi/abstractNN",
+        "Source Code": "https://github.com/guillaume117/abstractNN",
     },
     packages=find_packages(exclude=["tests", "tests.*", "docs", "scripts"]),
     classifiers=[
