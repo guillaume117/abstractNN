@@ -228,6 +228,6 @@ Currently optimized for:
 Next Steps
 ----------
 
-- :doc:`installation`: Install AbstClaud
+- :doc:`installation`: Install abstractNN
 - :doc:`quickstart`: Run your first verification
 - :doc:`tutorials/index`: Detailed tutorials
