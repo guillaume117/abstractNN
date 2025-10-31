@@ -1,9 +1,9 @@
-
+.
 
 AbstractNN Documentation
 =======================
 
-**AbstractNN** is a formal verification framework for neural networks using abstract interpretation and affine arithmetic. It provides sound over-approximations of neural network behavior under input perturbations.
+**AbstractNN** is a Python library for **formal verification of neural networks** using abstract interpretation and affine arithmetic. It provides **mathematically sound** guarantees about network behavior under input perturbations.
 
 .. toctree::
    :maxdepth: 2
@@ -23,6 +23,7 @@ AbstractNN Documentation
    user_guide/relaxation
    user_guide/soundness
    user_guide/vgg16_example
+   cli
 
 .. toctree::
    :maxdepth: 2
