@@ -32,7 +32,7 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/flyworthi/abstractNN"
+Homepage = "https://github.com/guillaume117/abstractNN"
 Documentation = "https://abstractnn.readthedocs.io"
 Repository = "https://github.com/flyworthi/abstractNN"
 "Bug Tracker" = "https://github.com/flyworthi/abstractNN/issues"

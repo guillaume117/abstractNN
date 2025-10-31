@@ -59,6 +59,7 @@ site/
 
 # Models and data
 models/*.onnx
+models/*.onnx.data
 models/*.pth
 models/*.pt
 data/

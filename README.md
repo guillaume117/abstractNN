@@ -29,9 +29,13 @@ pip install abstractNN
 ### From source
 
 ```bash
-git clone https://github.com/flyworthi/abstractNN.git
+git clone https://github.com/guillaume117/abstractNN.git
 cd abstractNN
 pip install -e .
+
+# Download pre-trained models
+chmod +x scripts/download_models.sh
+./scripts/download_models.sh
 ```
 
 ### With optional dependencies
@@ -113,6 +117,22 @@ abstractnn-verify --model model.onnx --image test.npy --epsilon 0.01
 abstractnn-info
 ```
 
+## ⚠️ Large Model Files
+
+**Note**: Pre-trained model files (like VGG16) are **NOT** included in the repository due to their large size (500+ MB).
+
+To download models:
+
+```bash
+# Option 1: Use download script
+./scripts/download_models.sh
+
+# Option 2: Models will be automatically downloaded when running tests
+python -m pytest tests/test_vgg16_formal.py
+```
+
+The models will be saved to the `models/` directory.
+
 ## 📚 Documentation
 
 Full documentation is available at [abstractnn.readthedocs.io](https://abstractnn.readthedocs.io)
@@ -173,24 +193,23 @@ Contributions are welcome! Please see CONTRIBUTING.md for guidelines.
 # Setup development environment
 git clone https://github.com/flyworthi/abstractNN.git
 cd abstractNN
-pip install -e .[dev]
-
-# Run tests
-pytest tests/
-
-# Format code
-black abstractnn/ tests/
-isort abstractnn/ tests/
-
-# Type checking
-mypy abstractnn/
-```
-
-## 📊 Comparison with Other Tools
-
+pip install -e .[dev]# Run testspytest tests/# Format codeblack abstractnn/ tests/isort abstractnn/ tests/# Type checkingmypy abstractnn/```## 📊 Comparison with Other Tools
 
 Tool	Soundness	Scalability	Speed	Tightness
 abstractNN	✅ Yes	⚠️ Medium	⚠️ Medium	⚠️ Good
 ERAN	✅ Yes	✅ High	✅ Fast	⚠️ Good
 Marabou	✅ Yes	❌ Low	❌ Slow	✅ Exact
-α,β-CROWN	✅ Yes	✅ High	✅ Fast	✅ Good
+α,β-CROWN	✅ Yes	✅ High	✅ Fast	✅ GoodabstractNN/
+├── abstractnn/           # Main package
+│   ├── __init__.py
+│   ├── affine_engine.py  # Affine expression management
+│   ├── bound_propagator.py  # Layer-by-layer propagation
+│   ├── relaxer.py        # Non-linear relaxations
+│   ├── onnx_parser.py    # ONNX model parsing
+│   ├── partial_evaluator.py  # Partial network evaluation
+│   ├── soundness_checker.py  # Soundness validation
+│   └── cli.py            # Command-line interface
+├── tests/                # Test suite
+├── docs/                 # Sphinx documentation
+├── examples/             # Usage examples
+└── scripts/              # Utility scripts
