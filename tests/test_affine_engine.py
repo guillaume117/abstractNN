@@ -4,7 +4,7 @@ Tests unitaires pour le moteur d'expressions affines
 
 import unittest
 import numpy as np
-from modules.affine_engine import AffineExpression, AffineExpressionEngine
+from abstractnn.affine_engine import AffineExpression, AffineExpressionEngine
 
 
 class TestAffineExpression(unittest.TestCase):

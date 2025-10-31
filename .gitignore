@@ -69,6 +69,7 @@ cache/
 *.npy
 *.pkl
 *.pickle
+*.onnx
 
 # Jupyter
 .ipynb_checkpoints

@@ -191,7 +191,7 @@ Comparison with Other Methods
      - ❌ Loose
      - ✅ High
      - ✅ Fast
-   * - **AbstClaud**
+   * - **AbstracNN**
      - ✅ Yes
      - ⚠️ Good
      - ⚠️ Medium

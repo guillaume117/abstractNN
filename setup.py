@@ -78,6 +78,7 @@ setup(
     entry_points={
         "console_scripts": [
             "abstractnn-verify=abstractnn.cli:verify",
+            "abstractnn-eval=abstractnn.cli:evaluate",
             "abstractnn-info=abstractnn.cli:info",
         ],
     },

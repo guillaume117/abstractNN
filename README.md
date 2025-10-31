@@ -1,4 +1,4 @@
-# abstractNN
+# AbstractNN
 
 [![PyPI version](https://badge.fury.io/py/abstractNN.svg)](https://badge.fury.io/py/abstractNN)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
@@ -6,7 +6,7 @@
 [![Documentation Status](https://readthedocs.org/projects/abstractnn/badge/?version=latest)](https://abstractnn.readthedocs.io/en/latest/?badge=latest)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-**abstractNN** is a Python library for **formal verification of neural networks** using abstract interpretation and affine arithmetic. It provides **mathematically sound** guarantees about network behavior under input perturbations.
+**AbstractNN** is a Python library for **formal verification of neural networks** using abstract interpretation and affine arithmetic. It provides **mathematically sound** guarantees about network behavior under input perturbations.
 
 ## 🎯 Key Features
 
@@ -23,7 +23,7 @@
 ### From PyPI (recommended)
 
 ```bash
-pip install abstractNN
+pip install abstractnn
 ```
 
 ### From source
@@ -110,8 +110,17 @@ if result['success']:
 ### Command Line Interface
 
 ```bash
-# Verify a model
+# Verify a model (soundness checking)
 abstractnn-verify --model model.onnx --image test.npy --epsilon 0.01
+
+# Formal evaluation with affine arithmetic (default FMNIST example)
+abstractnn-eval
+
+# Custom evaluation
+abstractnn-eval --model custom.onnx --image test.png --noise 0.1 --output results.json
+
+# With detailed report
+abstractnn-eval --detailed-report --export-report-csv report.csv
 
 # Get library info
 abstractnn-info
@@ -133,12 +142,40 @@ python -m pytest tests/test_vgg16_formal.py
 
 The models will be saved to the `models/` directory.
 
+## 🎯 Use Cases
+
+### 1. Soundness Verification (abstractnn-verify)
+
+Verify that formal bounds are sound by comparing with Monte Carlo sampling:
+
+```bash
+abstractnn-verify --model vgg16.onnx --image test.npy --epsilon 0.01 --layers 5
+```
+
+### 2. Formal Evaluation (abstractnn-eval)
+
+Compute guaranteed output bounds for all classes:
+
+```bash
+# Use default FMNIST example
+abstractnn-eval
+
+# Custom model and image
+abstractnn-eval \
+    --model mymodel.onnx \
+    --image myimage.png \
+    --noise 0.05 \
+    --output results.json \
+    --detailed-report
+```
+
 ## 📚 Documentation
 
 Full documentation is available at [abstractnn.readthedocs.io](https://abstractnn.readthedocs.io)
 
 - **[Installation Guide](https://abstractnn.readthedocs.io/en/latest/installation.html)**
 - **[Quick Start Tutorial](https://abstractnn.readthedocs.io/en/latest/quickstart.html)**
+- **[CLI Reference](https://abstractnn.readthedocs.io/en/latest/cli.html)**
 - **[API Reference](https://abstractnn.readthedocs.io/en/latest/api/modules.html)**
 - **[Examples](https://abstractnn.readthedocs.io/en/latest/tutorials/index.html)**
 
@@ -157,6 +194,7 @@ pytest tests/test_affine_engine.py -v
 
 ## 🏗️ Architecture
 
+```text
 abstractNN/
 ├── abstractnn/           # Main package
 │   ├── __init__.py
@@ -171,20 +209,7 @@ abstractNN/
 ├── docs/                 # Sphinx documentation
 ├── examples/             # Usage examples
 └── scripts/              # Utility scripts
-
-##🔬 Research & Citations
-
-If you use abstractNN in your research, please cite:
-
-```cite
-@software{abstractnn2025,
-  title={abstractNN: Formal Verification of Neural Networks using Abstract Interpretation},
-  author={Berthelot, Guillaume},
-  year={2025},
-  url={https://github.com/guillaume117/abstractNN},
-  version={0.1.0}
-}
-```
+```## 🔬 Research & CitationsIf you use abstractNN in your research, please cite:```cite@software{abstractnn2025,  title={abstractNN: Formal Verification of Neural Networks using Abstract Interpretation},  author={Berthelot, Guillaume},  year={2025},  url={https://github.com/guillaume117/abstractNN},  version={0.1.0}}```
 
 ## 🤝 Contributing
 Contributions are welcome! Please see CONTRIBUTING.md for guidelines.
@@ -193,13 +218,20 @@ Contributions are welcome! Please see CONTRIBUTING.md for guidelines.
 # Setup development environment
 git clone https://github.com/flyworthi/abstractNN.git
 cd abstractNN
-pip install -e .[dev]# Run testspytest tests/# Format codeblack abstractnn/ tests/isort abstractnn/ tests/# Type checkingmypy abstractnn/```## 📊 Comparison with Other Tools
 
-Tool	Soundness	Scalability	Speed	Tightness
-abstractNN	✅ Yes	⚠️ Medium	⚠️ Medium	⚠️ Good
-ERAN	✅ Yes	✅ High	✅ Fast	⚠️ Good
-Marabou	✅ Yes	❌ Low	❌ Slow	✅ Exact
-α,β-CROWN	✅ Yes	✅ High	✅ Fast	✅ GoodabstractNN/
+pip install -e .[dev]# Run testspytest tests/# Format codeblack abstractnn/ tests/isort abstractnn/ tests/# Type checkingmypy abstractnn/
+
+```
+
+## 📊 Comparison with Other Tools
+
+| Method       | Soundness | Tightness | Scalability | Speed   |
+|---------------|------------|------------|--------------|----------|
+| Monte Carlo   | ❌ No      | N/A        | ✅ High      | ✅ Fast  |
+| MILP          | ✅ Yes     | ✅ Exact    | ❌ Low       | ❌ Slow  |
+| Interval      | ✅ Yes     | ❌ Loose    | ✅ High      | ✅ Fast  |
+| **AbstractNN** | ✅ Yes     | ⚠️ Good     | ⚠️ Medium    | ⚠️ Medium |
+abstractNN/
 ├── abstractnn/           # Main package
 │   ├── __init__.py
 │   ├── affine_engine.py  # Affine expression management

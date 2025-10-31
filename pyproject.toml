@@ -39,6 +39,7 @@ Repository = "https://github.com/flyworthi/abstractNN"
 
 [project.scripts]
 abstractnn-verify = "abstractnn.cli:verify"
+abstractnn-eval = "abstractnn.cli:evaluate"
 abstractnn-info = "abstractnn.cli:info"
 
 [tool.black]

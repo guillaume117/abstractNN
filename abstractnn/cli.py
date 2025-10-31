@@ -143,6 +143,168 @@ Examples:
         sys.exit(2)
 
 
+def evaluate():
+    """Affine evaluation command"""
+    parser = argparse.ArgumentParser(
+        description="Formal evaluation using affine arithmetic",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Evaluate with default FMNIST model
+  abstractnn-eval
+
+  # Evaluate custom model
+  abstractnn-eval --model custom_model.onnx --image test.png --noise 0.1
+
+  # With detailed report
+  abstractnn-eval --detailed-report --export-report-csv report.csv
+        """
+    )
+    
+    parser.add_argument(
+        "--model", "-m",
+        default="examples/fmnist_cnn.onnx",
+        help="Path to ONNX model file (default: examples/fmnist_cnn.onnx)"
+    )
+    
+    parser.add_argument(
+        "--image", "-i",
+        default="examples/fmnist_sample_0_Ankle_boot.png",
+        help="Path to input image (default: examples/fmnist_sample_0_Ankle_boot.png)"
+    )
+    
+    parser.add_argument(
+        "--noise", "-n",
+        type=float,
+        default=0.001,
+        help="Noise level epsilon (default: 0.05)"
+    )
+    
+    parser.add_argument(
+        "--output", "-o",
+        default="results.json",
+        help="Output JSON file (default: results.json)"
+    )
+    
+    parser.add_argument(
+        "--activation-relaxation",
+        default="linear",
+        choices=["linear", "quadratic"],
+        help="Activation relaxation type (default: linear)"
+    )
+    
+    parser.add_argument(
+        "--device",
+        default="cpu",
+        choices=["cpu", "gpu"],
+        help="Device to use (default: cpu)"
+    )
+    
+    parser.add_argument(
+        "--detailed-report",
+        action="store_true",
+        help="Generate detailed propagation report"
+    )
+    
+    parser.add_argument(
+        "--export-report-csv",
+        type=str,
+        metavar="FILE",
+        help="Export detailed report as CSV"
+    )
+    
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"abstractNN {__version__}"
+    )
+    
+    args = parser.parse_args()
+    
+    # Import affine_eval here to avoid circular imports
+    try:
+        # Try to import from parent directory
+        import sys
+        import os
+        parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        sys.path.insert(0, parent_dir)
+        from affine_eval import evaluate_model, convert_to_json_serializable
+    except ImportError:
+        print("Error: Could not import affine_eval module", file=sys.stderr)
+        sys.exit(1)
+    
+    # Check if files exist
+    model_path = Path(args.model)
+    image_path = Path(args.image)
+    
+    if not model_path.exists():
+        print(f"Error: Model file not found: {model_path}", file=sys.stderr)
+        print(f"Please ensure the file exists or provide a valid path with --model", file=sys.stderr)
+        sys.exit(1)
+    
+    if not image_path.exists():
+        print(f"Error: Image file not found: {image_path}", file=sys.stderr)
+        print(f"Please ensure the file exists or provide a valid path with --image", file=sys.stderr)
+        sys.exit(1)
+    
+    print(f"abstractNN Affine Evaluator v{__version__}")
+    print(f"Model: {args.model}")
+    print(f"Image: {args.image}")
+    print(f"Noise: {args.noise}")
+    print(f"Device: {args.device}")
+    print()
+    
+    try:
+        # Run evaluation
+        results = evaluate_model(
+            model_path=str(model_path),
+            input_image=str(image_path),
+            noise_level=args.noise,
+            activation_relaxation=args.activation_relaxation,
+            device=args.device,
+            enable_detailed_report=args.detailed_report
+        )
+        
+        # Convert to JSON serializable
+        json_results = convert_to_json_serializable(results)
+        
+        # Save results
+        output_path = Path(args.output)
+        with open(output_path, 'w') as f:
+            json.dump(json_results, f, indent=2)
+        
+        print(f"\n{'='*60}")
+        print("EVALUATION RESULTS")
+        print(f"{'='*60}")
+        print(f"Robust class: {results.get('robust_class', 'None')}")
+        print(f"Execution time: {results['execution_time']:.2f}s")
+        print(f"Results saved to: {output_path}")
+        
+        # Display bounds summary
+        if 'bounds_per_class' in results and results['bounds_per_class']:
+            print(f"\nBounds per class (sample):")
+            for class_id, bounds in list(results['bounds_per_class'].items())[:5]:
+                print(f"  Class {class_id}: [{bounds[0]:.4f}, {bounds[1]:.4f}]")
+        
+        # Export CSV if requested
+        if args.export_report_csv and 'detailed_report' in results:
+            csv_path = Path(args.export_report_csv)
+            # Note: This would require implementing CSV export in affine_eval
+            print(f"\n⚠️  CSV export not yet implemented")
+            print(f"   Detailed report available in JSON: {output_path}")
+        
+        sys.exit(0)
+        
+    except FileNotFoundError as e:
+        print(f"Error: File not found - {e}", file=sys.stderr)
+        sys.exit(1)
+    except Exception as e:
+        print(f"Error during evaluation: {e}", file=sys.stderr)
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
+
+
 def info():
     """Display library information"""
     print(f"""
@@ -173,8 +335,14 @@ Quick Start:
   
   # Verify network...
 
+Available Commands:
+  abstractnn-verify  - Verify neural network soundness
+  abstractnn-eval    - Formal evaluation with affine arithmetic
+  abstractnn-info    - Display library information
+
 For help:
   abstractnn-verify --help
+  abstractnn-eval --help
 """)
 
 
