@@ -14,9 +14,9 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 
 project = 'AbstractNN'
-copyright = '2025, Flyworthi.ai Lab'
+copyright = '2025, Guillaume BERTHELOT'
 author = 'Guillaume BERTHELOT'
-release = '1.0.0'
+release = '0.1.1'
 
 # -- General configuration ---------------------------------------------------
 
