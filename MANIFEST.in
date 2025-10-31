@@ -1,0 +1,12 @@
+include README.md
+include LICENSE
+include requirements.txt
+include CONTRIBUTING.md
+include CHANGELOG.md
+recursive-include abstractnn *.py
+recursive-include docs *.rst *.md *.py
+recursive-include examples *.py *.ipynb *.md
+recursive-include tests *.py
+prune docs/_build
+prune **/__pycache__
+prune **/*.pyc
