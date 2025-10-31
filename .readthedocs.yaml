@@ -6,7 +6,7 @@ version: 2
 
 # Set the OS, Python version, and other tools you might need
 build:
-  os: Ubuntu 24.04.3
+  os: Ubuntu-24.04.3
   tools:
     python: "3.12.7"
 
