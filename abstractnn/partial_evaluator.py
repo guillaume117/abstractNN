@@ -17,17 +17,21 @@ from .relaxer import NonLinearRelaxer
 
 
 class PartialNetworkEvaluator:
-    """Évaluateur pour sous-réseaux"""
+    """Évaluateur pour sous-réseaux - utilise BoundPropagator en interne"""
     
-    def __init__(self, engine: AffineExpressionEngine):
+    def __init__(self, engine: AffineExpressionEngine = None):
         """
         Initialiser l'évaluateur partiel
         
         Args:
-            engine: Moteur d'expressions affines
+            engine: Moteur d'expressions affines (optionnel, créé si absent)
         """
-        self.engine = engine
-        self.relaxer = NonLinearRelaxer()
+        self.engine = engine or AffineExpressionEngine()
+        # Utiliser BoundPropagator au lieu de réécrire la logique
+        self.propagator = BoundPropagator(
+            relaxation_type='linear',
+            enable_reporting=False  # Pas de rapport par défaut
+        )
     
     def create_input_expressions(
         self,
@@ -38,7 +42,7 @@ class PartialNetworkEvaluator:
         Créer les expressions d'entrée avec bruit
         
         Args:
-            image: Image d'entrée (C, H, W)
+            image: Image d'entrée (C, H, W) ou (B, C, H, W)
             noise_level: Niveau de bruit epsilon
             
         Returns:
@@ -55,6 +59,8 @@ class PartialNetworkEvaluator:
         """
         Propager les expressions à travers un sous-ensemble de couches
         
+        Utilise BoundPropagator.propagate() en interne.
+        
         Args:
             expressions: Expressions d'entrée
             layers: Liste des couches à propager
@@ -63,222 +69,31 @@ class PartialNetworkEvaluator:
         Returns:
             Tuple (expressions_sortie, bornes_intermédiaires)
         """
-        current_expressions = expressions
-        current_shape = input_shape
-        all_bounds = []
-        
         print(f"  Propagation à travers {len(layers)} couches...")
-        print(f"  Forme d'entrée initiale : {current_shape}")
+        print(f"  Forme d'entrée initiale : {input_shape}")
         
-        for i, layer in enumerate(layers):
-            layer_type = layer['type']
-            layer_name = layer.get('name', f'layer_{i}')
-            
-            try:
-                if layer_type == 'Conv':
-                    print(f"    [Conv] Avant : {len(current_expressions)} exprs, shape={current_shape}")
-                    current_expressions, current_shape = self._propagate_conv(
-                        current_expressions,
-                        layer,
-                        current_shape
-                    )
-                    print(f"    ✓ Conv {layer_name}: {len(current_expressions)} exprs, shape={current_shape}")
-                    
-                elif layer_type == 'Relu':
-                    print(f"    [ReLU] Avant : {len(current_expressions)} exprs")
-                    current_expressions = self._propagate_relu(current_expressions)
-                    print(f"    ✓ ReLU {layer_name}: {len(current_expressions)} exprs")
-                    
-                elif layer_type == 'MaxPool':
-                    print(f"    [MaxPool] Avant : {len(current_expressions)} exprs, shape={current_shape}")
-                    current_expressions, current_shape = self._propagate_maxpool(
-                        current_expressions,
-                        layer,
-                        current_shape
-                    )
-                    print(f"    ✓ MaxPool {layer_name}: {len(current_expressions)} exprs, shape={current_shape}")
-                    
-                elif layer_type == 'Gemm':
-                    print(f"    [Gemm] Avant : {len(current_expressions)} exprs")
-                    current_expressions = self._propagate_gemm(
-                        current_expressions,
-                        layer
-                    )
-                    print(f"    ✓ Gemm {layer_name}: {len(current_expressions)} exprs")
-                    
-                elif layer_type == 'Reshape':
-                    current_shape = self._get_reshape_output_shape(layer, current_shape)
-                    print(f"    ✓ Reshape {layer_name}: {current_shape}")
-                    
-                elif layer_type in ['Shape', 'Concat']:
-                    print(f"    ⊗ Skipping {layer_type} {layer_name} (auxiliary)")
-                    continue
-                    
-                else:
-                    print(f"    ⚠ Type de couche non supporté : {layer_type}")
-                    continue
-                
-                # Calculer les bornes après chaque couche (limité pour perf)
-                sample_size = min(100, len(current_expressions))
-                bounds = [expr.get_bounds() for expr in current_expressions[:sample_size]]
-                all_bounds.extend(bounds)
-                
-            except ValueError as e:
-                print(f"    ✗ Erreur ValueError lors de la propagation de {layer_type} {layer_name}: {e}")
-                print(f"       Debug: current_shape={current_shape}, len(exprs)={len(current_expressions)}")
-                raise
-            except Exception as e:
-                print(f"    ✗ Erreur lors de la propagation de {layer_type} {layer_name}: {e}")
-                print(f"       Type: {type(e).__name__}")
-                import traceback
-                traceback.print_exc()
-                raise
-        
-        return current_expressions, all_bounds
-    
-    def _propagate_conv(
-        self,
-        expressions: List[AffineExpression],
-        layer: Dict[str, Any],
-        input_shape: Tuple[int, ...]
-    ) -> Tuple[List[AffineExpression], Tuple[int, ...]]:
-        """Propager à travers une couche convolutionnelle"""
-        weights = layer.get('weights')
-        bias = layer.get('bias')
-        
-        if weights is None:
-            raise ValueError("Conv layer sans poids")
-        
-        # Extraire les attributs
-        attrs = layer.get('attributes', {})
-        strides = attrs.get('strides', [1, 1])
-        pads = attrs.get('pads', [0, 0, 0, 0])
-        dilations = attrs.get('dilations', [1, 1])
-        
-        print(f"       Conv params: strides={strides}, pads={pads}, dilations={dilations}")
-        print(f"       Weights shape: {weights.shape}")
-        print(f"       Input shape: {input_shape}")
-        
-        # Convertir les pads au format attendu
-        if len(pads) == 4:
-            padding = (pads[0], pads[1])
-        elif len(pads) == 2:
-            padding = tuple(pads)
-        else:
-            padding = (0, 0)
-        
-        # conv2d_layer ATTEND TOUJOURS (B, C, H, W)
-        # Il faut donc toujours ajouter le batch si absent
-        if len(input_shape) == 3:
-            # (C, H, W) -> (1, C, H, W)
-            work_shape = (1,) + input_shape
-        elif len(input_shape) == 4:
-            # Déjà (B, C, H, W)
-            work_shape = input_shape
-        else:
-            raise ValueError(f"Forme d'entrée invalide pour Conv: {input_shape}")
-        
-        print(f"       Work shape (avec batch): {work_shape}, padding={padding}")
-        
+        # Utiliser le propagateur existant
         try:
-            # Appeler conv2d_layer avec la forme (B, C, H, W)
-            output_exprs, output_shape = self.engine.conv2d_layer(
+            output_expressions = self.propagator.propagate(
                 expressions,
-                weights,
-                bias if bias is not None else np.zeros(weights.shape[0]),
-                work_shape,  # TOUJOURS 4 dimensions maintenant
-                stride=tuple(strides) if len(strides) == 2 else (strides[0], strides[0]),
-                padding=padding,
-                dilation=tuple(dilations) if len(dilations) == 2 else (dilations[0], dilations[0])
+                layers,
+                input_shape=input_shape
             )
             
-            print(f"       Output: {len(output_exprs)} exprs, shape={output_shape}")
+            # Extraire les bornes intermédiaires
+            all_bounds = []
+            for bound_info in self.propagator.intermediate_bounds:
+                all_bounds.extend(bound_info.get('bounds', []))
             
-            # Si l'entrée était (C,H,W), retirer le batch de la sortie
-            if len(input_shape) == 3 and len(output_shape) == 4:
-                output_shape = output_shape[1:]  # (1, C, H, W) -> (C, H, W)
+            print(f"  ✓ Propagation terminée : {len(output_expressions)} expressions")
             
-            return output_exprs, output_shape
+            return output_expressions, all_bounds
             
         except Exception as e:
-            print(f"       ✗ Erreur dans conv2d_layer: {e}")
+            print(f"  ✗ Erreur lors de la propagation : {e}")
             import traceback
             traceback.print_exc()
             raise
-    
-    def _propagate_relu(
-        self,
-        expressions: List[AffineExpression]
-    ) -> List[AffineExpression]:
-        """Propager à travers ReLU"""
-        relaxed_exprs = []
-        for expr in expressions:
-            relaxed = self.relaxer.relu_relaxation(expr, relaxation_type='linear')
-            relaxed_exprs.append(relaxed)
-        
-        return relaxed_exprs
-    
-    def _propagate_maxpool(
-        self,
-        expressions: List[AffineExpression],
-        layer: Dict[str, Any],
-        input_shape: Tuple[int, ...]
-    ) -> Tuple[List[AffineExpression], Tuple[int, ...]]:
-        """Propager à travers MaxPool"""
-        attrs = layer.get('attributes', {})
-        kernel_shape = attrs.get('kernel_shape', [2, 2])
-        strides = attrs.get('strides', [2, 2])
-        
-        output_exprs, output_shape = self.engine.maxpool2d_layer(
-            expressions,
-            input_shape,
-            kernel_size=tuple(kernel_shape),
-            stride=tuple(strides)
-        )
-        
-        return output_exprs, output_shape
-    
-    def _propagate_gemm(
-        self,
-        expressions: List[AffineExpression],
-        layer: Dict[str, Any]
-    ) -> List[AffineExpression]:
-        """Propager à travers Gemm (General Matrix Multiplication)"""
-        weights = layer.get('weights')
-        bias = layer.get('bias')
-        
-        if weights is None:
-            raise ValueError("Gemm layer sans poids")
-        
-        # Gemm attributes
-        attrs = layer.get('attributes', {})
-        alpha = attrs.get('alpha', 1.0)
-        beta = attrs.get('beta', 1.0)
-        transA = attrs.get('transA', 0)
-        transB = attrs.get('transB', 0)
-        
-        # Appliquer transpose si nécessaire
-        W = weights.T if transB else weights
-        
-        output_exprs = self.engine.linear_layer(
-            expressions,
-            W * alpha,
-            bias * beta if bias is not None else np.zeros(W.shape[0])
-        )
-        
-        return output_exprs
-    
-    def _get_reshape_output_shape(
-        self,
-        layer: Dict[str, Any],
-        input_shape: Tuple[int, ...]
-    ) -> Tuple[int, ...]:
-        """Obtenir la forme de sortie d'une opération Reshape"""
-        # Pour l'instant, on retourne la forme d'entrée
-        # Une vraie implémentation extrairait la forme cible
-        attrs = layer.get('attributes', {})
-        target_shape = attrs.get('shape', input_shape)
-        return tuple(target_shape) if target_shape else input_shape
 
 
 class ONNXPartialEvaluator:
@@ -295,29 +110,6 @@ class ONNXPartialEvaluator:
         self.session = ort.InferenceSession(model_path)
         self.parser = ONNXParser(model_path)
     
-    def extract_intermediate_layer_name(self, num_layers: int) -> Optional[str]:
-        """
-        Trouver le nom de sortie de la n-ième couche dans le modèle ONNX
-        
-        Args:
-            num_layers: Nombre de couches à traverser
-            
-        Returns:
-            Nom du tensor de sortie, ou None si non trouvé
-        """
-        all_layers = self.parser.parse()
-        target_layers = all_layers[:num_layers]
-        
-        # Le dernier layer devrait avoir un nom de sortie
-        if target_layers:
-            last_layer = target_layers[-1]
-            # Les noms de sortie ONNX sont souvent stockés dans 'outputs'
-            outputs = last_layer.get('outputs', [])
-            if outputs:
-                return outputs[0]
-        
-        return None
-    
     def monte_carlo_sampling_at_layer(
         self,
         image: np.ndarray,
@@ -328,69 +120,127 @@ class ONNXPartialEvaluator:
         """
         Échantillonnage Monte Carlo à une couche spécifique
         
+        Utilise ONNX Runtime pour l'inférence complète, puis compare
+        avec les résultats formels.
+        
         Args:
-            image: Image d'entrée (C, H, W)
+            image: Image d'entrée (C, H, W) ou (B, C, H, W)
             noise_level: Niveau de bruit
-            num_layers: Nombre de couches à traverser
+            num_layers: Nombre de couches à traverser (ignoré pour full network)
             num_samples: Nombre d'échantillons
             
         Returns:
-            Tuple (bornes_min, bornes_max) des activations à la couche spécifiée
+            Tuple (bornes_min, bornes_max) des sorties du réseau
         """
-        print(f"\n  Monte Carlo : extraction des activations à la couche {num_layers}...")
-        
-        # STRATÉGIE : Créer un sous-modèle ONNX tronqué ou utiliser PyTorch
-        # Pour ce prototype, on utilise PyTorch pour extraire les activations
+        print(f"\n  Monte Carlo : échantillonnage sur le réseau complet...")
         
         try:
-            import torch
-            import torchvision.models as models
+            # Stratégie 1: Essayer PyTorch pour VGG16
+            if 'vgg16' in self.model_path.lower():
+                return self._monte_carlo_vgg16(image, noise_level, num_layers, num_samples)
             
-            # Charger VGG16 PyTorch
-            vgg16 = models.vgg16(weights=models.VGG16_Weights.IMAGENET1K_V1)
-            vgg16.eval()
-            
-            # Extraire le sous-réseau correspondant aux num_layers premières couches
-            # VGG16 features: 0=Conv, 1=ReLU, 2=Conv, 3=ReLU, 4=MaxPool, ...
-            # On compte les vraies couches (Conv, ReLU, MaxPool)
-            all_layers = self.parser.parse()
-            target_layers = all_layers[:num_layers]
-            
-            # Compter combien de couches features cela représente
-            # Simplification: on mappe num_layers directement à l'index features
-            feature_index = self._map_to_feature_index(target_layers)
-            
-            print(f"     → Extraction jusqu'à features[{feature_index}]")
-            
-            # Créer le sous-modèle
-            sub_model = torch.nn.Sequential(*list(vgg16.features[:feature_index+1]))
-            sub_model.eval()
-            
-            samples = []
-            
-            for _ in range(num_samples):
-                # Générer bruit aléatoire
-                noise = np.random.uniform(-noise_level, noise_level, image.shape).astype(np.float32)
-                noisy_image = (image + noise).astype(np.float32)
-                
-                # Ajouter dimension batch
-                if len(noisy_image.shape) == 3:
-                    noisy_image = np.expand_dims(noisy_image, axis=0)
-                
-                # Inférence à travers le sous-modèle
-                with torch.no_grad():
-                    input_tensor = torch.from_numpy(noisy_image)
-                    intermediate_output = sub_model(input_tensor)
-                    samples.append(intermediate_output.numpy().flatten())
-            
-            samples_array = np.array(samples)
-            return samples_array.min(axis=0), samples_array.max(axis=0)
+            # Stratégie 2: Utiliser ONNX Runtime pour les autres modèles
+            return self._monte_carlo_onnx_runtime(image, noise_level, num_samples)
             
         except Exception as e:
             print(f"     ✗ Erreur lors de l'extraction des activations : {e}")
             raise
     
-    def _map_to_feature_index(self, layers: List[Dict[str, Any]]) -> int:
+    def _monte_carlo_vgg16(
+        self,
+        image: np.ndarray,
+        noise_level: float,
+        num_layers: int,
+        num_samples: int
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """Monte Carlo sampling spécifique pour VGG16 avec PyTorch"""
+        import torch
+        import torchvision.models as models
+        
+        model = models.vgg16(weights=models.VGG16_Weights.IMAGENET1K_V1)
+        model.eval()
+        
+        # Extraire sous-réseau VGG16
+        all_layers = self.parser.parse()
+        target_layers = all_layers[:num_layers]
+        feature_index = self._map_vgg16_to_feature_index(target_layers)
+        
+        print(f"     → Extraction jusqu'à features[{feature_index}] (VGG16)")
+        sub_model = torch.nn.Sequential(*list(model.features[:feature_index+1]))
+        sub_model.eval()
+        
+        samples = []
+        
+        for _ in range(num_samples):
+            # Générer bruit aléatoire
+            noise = np.random.uniform(-noise_level, noise_level, image.shape).astype(np.float32)
+            noisy_image = (image + noise).astype(np.float32)
+            
+            # Ajouter dimension batch si nécessaire
+            if len(noisy_image.shape) == 3:
+                noisy_image = np.expand_dims(noisy_image, axis=0)
+            
+            # Inférence à travers le sous-modèle
+            with torch.no_grad():
+                input_tensor = torch.from_numpy(noisy_image)
+                intermediate_output = sub_model(input_tensor)
+                samples.append(intermediate_output.numpy().flatten())
+        
+        samples_array = np.array(samples)
+        return samples_array.min(axis=0), samples_array.max(axis=0)
+    
+    def _monte_carlo_onnx_runtime(
+        self,
+        image: np.ndarray,
+        noise_level: float,
+        num_samples: int
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Monte Carlo sampling générique utilisant ONNX Runtime
+        
+        Fonctionne avec n'importe quel modèle ONNX en faisant
+        l'inférence complète du réseau.
+        """
+        print(f"     → Échantillonnage via ONNX Runtime (réseau complet)")
+        
+        # Obtenir le nom de l'entrée depuis la session ONNX
+        input_name = self.session.get_inputs()[0].name
+        
+        samples = []
+        
+        for i in range(num_samples):
+            # Générer bruit aléatoire
+            noise = np.random.uniform(-noise_level, noise_level, image.shape).astype(np.float32)
+            noisy_image = (image + noise).astype(np.float32)
+            
+            # Ajouter dimension batch si nécessaire
+            if len(noisy_image.shape) == 3:
+                noisy_image = np.expand_dims(noisy_image, axis=0)
+            
+            # Inférence via ONNX Runtime
+            try:
+                outputs = self.session.run(None, {input_name: noisy_image})
+                # Prendre la première sortie (logits généralement)
+                output = outputs[0].flatten()
+                samples.append(output)
+            except Exception as e:
+                print(f"     ✗ Erreur d'inférence ONNX à l'échantillon {i}: {e}")
+                # Continuer avec les autres échantillons
+                continue
+            
+            # Afficher progression
+            if (i + 1) % 20 == 0:
+                print(f"        Progression: {i+1}/{num_samples} échantillons")
+        
+        if not samples:
+            raise RuntimeError("Aucun échantillon Monte Carlo n'a réussi")
+        
+        samples_array = np.array(samples)
+        print(f"     ✓ {len(samples)} échantillons collectés")
+        
+        return samples_array.min(axis=0), samples_array.max(axis=0)
+    
+    def _map_vgg16_to_feature_index(self, layers: List[Dict[str, Any]]) -> int:
         """
         Mapper les couches parsées vers l'index dans vgg16.features
         
@@ -400,23 +250,18 @@ class ONNXPartialEvaluator:
         Returns:
             Index dans vgg16.features
         """
-        # VGG16.features contient 31 couches séquentielles
-        # Pattern: Conv-ReLU-Conv-ReLU-MaxPool (répété)
-        
         feature_idx = -1
         
         for layer in layers:
             layer_type = layer['type']
             
             if layer_type == 'Conv':
-                feature_idx += 1  # Conv
-                # Chaque Conv est suivie d'un ReLU dans features
+                feature_idx += 1
             elif layer_type == 'Relu':
-                feature_idx += 1  # ReLU
+                feature_idx += 1
             elif layer_type == 'MaxPool':
-                feature_idx += 1  # MaxPool
+                feature_idx += 1
             elif layer_type in ['Shape', 'Concat', 'Reshape']:
-                # Ces couches sont auxiliaires, ne comptent pas
                 continue
         
         return feature_idx
@@ -438,7 +283,7 @@ def verify_partial_soundness(
     
     Args:
         model_path: Chemin vers le modèle ONNX
-        image: Image d'entrée (C, H, W)
+        image: Image d'entrée (C, H, W) ou (B, C, H, W)
         noise_level: Niveau de bruit
         num_layers: Nombre de couches à tester
         num_mc_samples: Nombre d'échantillons Monte Carlo
@@ -460,9 +305,8 @@ def verify_partial_soundness(
     print(f"Niveau de bruit : {noise_level}")
     print(f"Échantillons MC : {num_mc_samples}")
     
-    # Créer l'évaluateur formel
-    engine = AffineExpressionEngine()
-    evaluator = PartialNetworkEvaluator(engine)
+    # Créer l'évaluateur formel (utilise BoundPropagator en interne)
+    evaluator = PartialNetworkEvaluator()
     
     # Propagation formelle
     print(f"\n[1/3] Propagation formelle...")
@@ -498,11 +342,10 @@ def verify_partial_soundness(
     onnx_evaluator = ONNXPartialEvaluator(model_path)
     
     try:
-        # IMPORTANT : Extraire à la même couche que la propagation formelle
         mc_min, mc_max = onnx_evaluator.monte_carlo_sampling_at_layer(
             image,
             noise_level,
-            num_layers,  # Même nombre de couches
+            num_layers,
             num_mc_samples
         )
         

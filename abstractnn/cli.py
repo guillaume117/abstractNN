@@ -149,17 +149,17 @@ def evaluate():
         description="Formal evaluation using affine arithmetic",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-Examples:
-  # Evaluate with default FMNIST model
-  abstractnn-eval
+    Examples:
+    # Evaluate with default FMNIST model
+    abstractnn-eval
 
-  # Evaluate custom model
-  abstractnn-eval --model custom_model.onnx --image test.png --noise 0.1
+    # Evaluate custom model
+    abstractnn-eval --model custom_model.onnx --image test.png --noise 0.1
 
-  # With detailed report
-  abstractnn-eval --detailed-report --export-report-csv report.csv
-        """
-    )
+    # With detailed report
+    abstractnn-eval --detailed-report --export-report-csv report.csv
+            """
+        )
     
     parser.add_argument(
         "--model", "-m",
