@@ -38,24 +38,7 @@ chmod +x scripts/download_models.sh
 ./scripts/download_models.sh
 ```
 
-### With optional dependencies
 
-```bash
-# Development tools
-pip install abstractNN[dev]
-
-# Documentation building
-pip install abstractNN[docs]
-
-# GPU acceleration
-pip install abstractNN[gpu]
-
-# Visualization tools
-pip install abstractNN[viz]
-
-# All extras
-pip install abstractNN[dev,docs,gpu,viz]
-```
 
 ## 🚀 Quick Start
 
@@ -216,7 +199,7 @@ Contributions are welcome! Please see CONTRIBUTING.md for guidelines.
 
 ```bash
 # Setup development environment
-git clone https://github.com/flyworthi/abstractNN.git
+git clone https://github.com/guillaume117/abstractNN.git
 cd abstractNN
 
 pip install -e .[dev]# Run testspytest tests/# Format codeblack abstractnn/ tests/isort abstractnn/ tests/# Type checkingmypy abstractnn/
@@ -230,18 +213,5 @@ pip install -e .[dev]# Run testspytest tests/# Format codeblack abstractnn/ test
 | Monte Carlo   | ❌ No      | N/A        | ✅ High      | ✅ Fast  |
 | MILP          | ✅ Yes     | ✅ Exact    | ❌ Low       | ❌ Slow  |
 | Interval      | ✅ Yes     | ❌ Loose    | ✅ High      | ✅ Fast  |
-| **AbstractNN** | ✅ Yes     | ⚠️ Good     | ⚠️ Medium    | ⚠️ Medium |
-abstractNN/
-├── abstractnn/           # Main package
-│   ├── __init__.py
-│   ├── affine_engine.py  # Affine expression management
-│   ├── bound_propagator.py  # Layer-by-layer propagation
-│   ├── relaxer.py        # Non-linear relaxations
-│   ├── onnx_parser.py    # ONNX model parsing
-│   ├── partial_evaluator.py  # Partial network evaluation
-│   ├── soundness_checker.py  # Soundness validation
-│   └── cli.py            # Command-line interface
-├── tests/                # Test suite
-├── docs/                 # Sphinx documentation
-├── examples/             # Usage examples
-└── scripts/              # Utility scripts
+| **AbstractNN** | ✅ Yes     |  ❌ Loose    | ⚠️ Medium    | ⚠️ Medium |
+

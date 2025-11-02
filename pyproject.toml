@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "abstractNN"
-version = "0.1.1"
+version = "0.1.2"
 description = "Formal verification of neural networks using abstract interpretation and affine arithmetic"
 readme = "README.md"
 requires-python = ">=3.8"

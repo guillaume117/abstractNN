@@ -4,8 +4,8 @@ Script de test de soundness pour le moteur d'évaluation formelle
 
 import os
 import sys
-from affine_eval import evaluate_model
-from modules.soundness_checker import SoundnessChecker, monte_carlo_robustness_test
+from abstractnn.affine_eval import evaluate_model
+from abstractnn.soundness_checker import SoundnessChecker, monte_carlo_robustness_test
 
 
 def test_soundness_single_image(model_path: str, 

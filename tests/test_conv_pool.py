@@ -4,7 +4,7 @@ Tests unitaires pour les opérations Conv2D et MaxPool2D
 
 import unittest
 import numpy as np
-from modules.affine_engine import AffineExpression, AffineExpressionEngine
+from abstractnn.affine_engine import AffineExpression, AffineExpressionEngine
 
 
 class TestConv2D(unittest.TestCase):

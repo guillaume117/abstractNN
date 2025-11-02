@@ -21,11 +21,11 @@ import warnings
 # Ajouter le chemin vers les modules
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from modules.affine_engine import AffineExpressionEngine
-from modules.onnx_parser import ONNXParser
-from modules.bound_propagator import BoundPropagator
-from modules.relaxer import NonLinearRelaxer
-from modules.soundness_checker import SoundnessChecker
+from abstractnn.affine_engine import AffineExpressionEngine
+from abstractnn.onnx_parser import ONNXParser
+from abstractnn.bound_propagator import BoundPropagator
+from abstractnn.relaxer import NonLinearRelaxer
+from abstractnn.soundness_checker import SoundnessChecker
 
 
 class TestVGG16Formal(unittest.TestCase):

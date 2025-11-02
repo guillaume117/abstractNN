@@ -4,9 +4,9 @@ Tests d'intégration
 
 import unittest
 import numpy as np
-from modules.affine_engine import AffineExpressionEngine
-from modules.bound_propagator import BoundPropagator
-from modules.result_aggregator import ResultAggregator
+from abstractnn.affine_engine import AffineExpressionEngine
+from abstractnn.bound_propagator import BoundPropagator
+from abstractnn.result_aggregator import ResultAggregator
 
 
 class TestIntegration(unittest.TestCase):

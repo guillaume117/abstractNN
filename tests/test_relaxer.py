@@ -4,8 +4,8 @@ Tests unitaires pour les relaxations d'activations
 
 import unittest
 import numpy as np
-from modules.affine_engine import AffineExpression
-from modules.relaxer import NonLinearRelaxer
+from abstractnn.affine_engine import AffineExpression
+from abstractnn.relaxer import NonLinearRelaxer
 
 
 class TestNonLinearRelaxer(unittest.TestCase):

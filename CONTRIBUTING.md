@@ -15,7 +15,7 @@ Thank you for your interest in contributing to abstractNN! This document provide
 1. **Fork and clone the repository**
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/abstractNN.git
+git clone https://github.com/guillaume117/abstractNN.git
 cd abstractNN
 ```
 
@@ -98,5 +98,7 @@ make html
 
 ## 📝 Commit Guidelines
 
-We follow the [Conventional Commits](https://www.conventionalcommits.org/) specification:
+We follow the [Conventional Commits](https://www.conventionalcommits.org/) 
 
+
+Many thanks, Guillaume Berthelot

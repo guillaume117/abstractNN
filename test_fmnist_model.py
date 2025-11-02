@@ -5,7 +5,7 @@ Script de test pour le modèle Fashion-MNIST avec le moteur d'évaluation formel
 import os
 import json
 import numpy as np
-from affine_eval import evaluate_model
+from abstractnn.affine_eval import evaluate_model
 from PIL import Image
 
 

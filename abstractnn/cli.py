@@ -228,7 +228,7 @@ def evaluate():
         import os
         parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         sys.path.insert(0, parent_dir)
-        from affine_eval import evaluate_model, convert_to_json_serializable
+        from modules.affine_eval import evaluate_model, convert_to_json_serializable
     except ImportError:
         print("Error: Could not import affine_eval module", file=sys.stderr)
         sys.exit(1)

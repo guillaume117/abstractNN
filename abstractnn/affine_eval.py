@@ -9,10 +9,10 @@ import numpy as np
 from PIL import Image
 from pathlib import Path
 
-from modules.onnx_parser import ONNXParser
-from modules.affine_engine import AffineExpressionEngine
-from modules.bound_propagator import BoundPropagator
-from modules.result_aggregator import ResultAggregator
+from abstractnn.onnx_parser import ONNXParser
+from abstractnn.affine_engine import AffineExpressionEngine
+from abstractnn.bound_propagator import BoundPropagator
+from abstractnn.result_aggregator import ResultAggregator
 
 
 def load_image(image_path: str, target_shape: tuple = None) -> np.ndarray:
