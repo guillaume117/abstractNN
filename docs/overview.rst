@@ -193,21 +193,11 @@ Comparison with Other Methods
      - ✅ Fast
    * - **AbstracNN**
      - ✅ Yes
-     - ⚠️ Good
      - ⚠️ Medium
      - ⚠️ Medium
+     - ⚠️ Medium
 
-Limitations
------------
 
-Memory Requirements
-~~~~~~~~~~~~~~~~~~~
-
-For large networks like VGG16:
-
-- Full symbolic propagation: ~168 GB (150,528 symbols)
-- Partial network evaluation: Feasible for 3-5 layers
-- Recommended: Use reduced resolution or GPU
 
 Precision vs Soundness Tradeoff
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

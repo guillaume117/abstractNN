@@ -1,5 +1,8 @@
 """
 Relaxation des fonctions d'activation non-linéaires
+Nota : les relaxations proposées dans ce projets sont grossières (nouvelle approximation affines des bornes inf et sup du domaine.
+Avantage, la propagation dans le réseau se fait à iso périmètre de symboles
+Inconvénient : bornes du domaine plus larges qu'une méthode par intérpolation (par exemple Chebydchev)
 """
 
 import numpy as np
@@ -8,8 +11,9 @@ from .affine_engine import AffineExpression
 
 
 class NonLinearRelaxer:
-    """Gère les relaxations convexes des activations non-linéaires"""
-    
+    """Gère les relaxations convexes des activations non-linéaires
+    Cette relaxation est grossière car elle fait perdre la relation afine avec l'entrée mais reste très simple"""
+    #TODO : gérer le cas ou epsilon = 0 pour éviter division par 0
     @staticmethod
     def relu_relaxation(expr: AffineExpression, 
                        relaxation_type: str = 'linear') -> AffineExpression:
@@ -47,6 +51,7 @@ class NonLinearRelaxer:
     @staticmethod
     def sigmoid_relaxation(expr: AffineExpression) -> AffineExpression:
         """Relaxation de Sigmoid (approximation linéaire)"""
+        
         l, u = expr.get_bounds()
         
         # Approximation linéaire au point milieu

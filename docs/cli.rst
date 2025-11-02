@@ -276,7 +276,7 @@ The JSON output contains:
 Activation Relaxation
 ~~~~~~~~~~~~~~~~~~~~~
 
-Two relaxation strategies are available:
+:
 
 **Linear Relaxation** (default):
 
@@ -286,10 +286,7 @@ For ReLU when :math:`l < 0 < u`:
 
    \text{ReLU}(x) \in \left[0, u \cdot \frac{x - l}{u - l}\right]
 
-**Quadratic Relaxation**:
 
-Tighter but more computationally expensive approximation.
-Non implemented yet
 
 abstractnn-info
 ---------------
