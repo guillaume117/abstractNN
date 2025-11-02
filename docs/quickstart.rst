@@ -3,7 +3,7 @@
 Quick Start Guide
 =================
 
-This guide will get you started with AbstClaud in 5 minutes.
+This guide will get you started with AbstractNN in 5 minutes.
 
 Basic Verification
 ------------------
@@ -15,9 +15,9 @@ Verify a simple MNIST classifier:
 
 .. code-block:: python
 
-    from modules.affine_engine import AffineExpressionEngine
-    from modules.onnx_parser import ONNXParser
-    from modules.bound_propagator import BoundPropagator
+    from abstractnn.affine_engine import AffineExpressionEngine
+    from abstractnn.onnx_parser import ONNXParser
+    from abstractnn.bound_propagator import BoundPropagator
     import numpy as np
 
     # Load model
@@ -51,7 +51,7 @@ For large networks, use partial evaluation:
 
 .. code-block:: python
 
-    from modules.partial_evaluator import verify_partial_soundness
+    from abstractnn.partial_evaluator import verify_partial_soundness
     import numpy as np
 
     # Create test image (224x224x3)
@@ -88,7 +88,7 @@ Compare formal bounds with Monte Carlo sampling:
 
 .. code-block:: python
 
-    from modules.soundness_checker import SoundnessChecker
+    from abstractnn.soundness_checker import SoundnessChecker
     import numpy as np
 
     checker = SoundnessChecker()
@@ -197,28 +197,7 @@ Compute certified accuracy on a dataset:
 Configuration Tips
 ------------------
 
-Memory Management
-~~~~~~~~~~~~~~~~~
 
-For large models, manage memory carefully:
-
-.. code-block:: python
-
-    # Limit number of symbols tracked
-    engine = AffineExpressionEngine(max_symbols=50000)
-
-    # Use checkpointing
-    propagator = BoundPropagator(
-        engine,
-        enable_reporting=True,
-        checkpoint_frequency=5
-    )
-
-    # Process in batches
-    batch_size = 1000
-    for i in range(0, len(expressions), batch_size):
-        batch = expressions[i:i+batch_size]
-        results = process_batch(batch)
 
 Performance Tuning
 ~~~~~~~~~~~~~~~~~~
@@ -238,14 +217,6 @@ Optimize for speed:
         num_mc_samples=50  # Instead of 100
     )
 
-    # Use simpler relaxation
-    from modules.relaxer import NonLinearRelaxer
-    
-    relaxer = NonLinearRelaxer()
-    relaxed = relaxer.relu_relaxation(
-        expr,
-        relaxation_type='interval'  # Faster than 'linear'
-    )
 
 Next Steps
 ----------

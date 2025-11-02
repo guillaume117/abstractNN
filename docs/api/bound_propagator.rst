@@ -4,7 +4,7 @@ Bound Propagator
 
 The bound propagator orchestrates layer-by-layer formal verification through neural networks.
 
-.. automodule:: modules.bound_propagator
+.. automodule:: abstractnn.bound_propagator
    :members:
    :undoc-members:
    :show-inheritance:
@@ -12,7 +12,7 @@ The bound propagator orchestrates layer-by-layer formal verification through neu
 BoundPropagator
 ---------------
 
-.. autoclass:: modules.bound_propagator.BoundPropagator
+.. autoclass:: abstractnn.bound_propagator.BoundPropagator
    :members:
    :special-members: __init__
    :show-inheritance:
@@ -103,9 +103,9 @@ Basic Propagation
 
 .. code-block:: python
 
-    from modules.affine_engine import AffineExpressionEngine
-    from modules.bound_propagator import BoundPropagator
-    from modules.onnx_parser import ONNXParser
+    from abstractnn.affine_engine import AffineExpressionEngine
+    from abstractnn.bound_propagator import BoundPropagator
+    from abstractnn.onnx_parser import ONNXParser
     
     # Load model
     parser = ONNXParser('model.onnx')
@@ -187,42 +187,7 @@ Layer-by-Layer Analysis
     plt.title('Bound Relaxation Through Network')
     plt.show()
 
-Performance Tips
-----------------
 
-Memory Management
-~~~~~~~~~~~~~~~~~
-
-For large networks:
-
-.. code-block:: python
-
-    # Limit symbol tracking
-    engine = AffineExpressionEngine(max_symbols=50000)
-    
-    # Use expression simplification
-    propagator = BoundPropagator(
-        engine,
-        simplify_threshold=1e-6  # Drop small coefficients
-    )
-
-Parallel Processing
-~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: python
-
-    from multiprocessing import Pool
-    
-    def propagate_batch(args):
-        exprs, layer, shape = args
-        return propagator._propagate_layer(exprs, layer, shape)
-    
-    # Process multiple layers in parallel
-    with Pool(4) as pool:
-        results = pool.map(propagate_batch, layer_batches)
-
-See Also
---------
 
 - :doc:`affine_engine`: Affine expression management
 - :doc:`relaxer`: Non-linear relaxation techniques

@@ -24,9 +24,9 @@ Module Overview
    :toctree: _autosummary
    :recursive:
 
-   modules.affine_engine
-   modules.bound_propagator
-   modules.relaxer
-   modules.onnx_parser
-   modules.partial_evaluator
-   modules.soundness_checker
+   abstractnn.affine_engine
+   abstractnn.bound_propagator
+   abstractnn.relaxer
+   abstractnn.onnx_parser
+   abstractnn.partial_evaluator
+   abstractnn.soundness_checker

@@ -27,11 +27,11 @@ setup(
     description="Formal verification of neural networks using abstract interpretation and affine arithmetic",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/flyworthi/abstractNN",
+    url="https://github.com/fflyworthiai/abstractNN",
     project_urls={
-        "Bug Tracker": "https://github.com/guillaume117/abstractNN/issues",
+        "Bug Tracker": "https://github.com/flyworthiai/abstractNN/issues",
         "Documentation": "https://abstractnn.readthedocs.io",
-        "Source Code": "https://github.com/guillaume117/abstractNN",
+        "Source Code": "https://github.com/gflyworthiai/abstractNN",
     },
     packages=find_packages(exclude=["tests", "tests.*", "docs", "scripts"]),
     classifiers=[

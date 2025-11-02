@@ -178,7 +178,7 @@ Options
 
    Path to input image (.png or .npy). Default: ``examples/fmnist_sample_0_Ankle_boot.png``
 
-.. option:: -n, --noise FLOAT
+.. option:: -n, --epsilon FLOAT
 
    Noise level epsilon. Default: 0.001
 
@@ -186,9 +186,6 @@ Options
 
    Output JSON file. Default: ``results.json``
 
-.. option:: --activation-relaxation {linear,quadratic}
-
-   Activation relaxation type. Default: ``linear``
 
 .. option:: --device {cpu,gpu}
 
@@ -222,7 +219,7 @@ Custom model and image:
    abstractnn-eval \
        --model custom_model.onnx \
        --image test.png \
-       --noise 0.1
+       --epsilon 0.01
 
 With detailed report:
 
@@ -231,7 +228,7 @@ With detailed report:
    abstractnn-eval \
        --model mymodel.onnx \
        --image myimage.png \
-       --noise 0.05 \
+       --epsilon 0.05 \
        --detailed-report \
        --output results.json
 

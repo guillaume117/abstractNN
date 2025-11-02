@@ -5,7 +5,7 @@ Affine Engine
 
 The affine engine is the core component for symbolic expression management and propagation.
 
-.. automodule:: modules.affine_engine
+.. automodule:: abstractnn.affine_engine
    :members:
    :undoc-members:
    :show-inheritance:
@@ -13,7 +13,7 @@ The affine engine is the core component for symbolic expression management and p
 AffineExpression
 ----------------
 
-.. autoclass:: modules.affine_engine.AffineExpression
+.. autoclass:: abstractnn.affine_engine.AffineExpression
    :members:
    :special-members: __init__, __add__, __mul__
    :show-inheritance:
@@ -43,7 +43,7 @@ AffineExpression
 AffineExpressionEngine
 ----------------------
 
-.. autoclass:: modules.affine_engine.AffineExpressionEngine
+.. autoclass:: abstractnn.affine_engine.AffineExpressionEngine
    :members:
    :undoc-members:
    :show-inheritance:
@@ -85,7 +85,7 @@ Basic Usage
 
 .. code-block:: python
 
-    from modules.affine_engine import AffineExpressionEngine
+    from abstractnn..affine_engine import AffineExpressionEngine
     import numpy as np
 
     engine = AffineExpressionEngine()

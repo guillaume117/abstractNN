@@ -8,12 +8,11 @@ Utile pour tester la soundness sur de grands modèles comme VGG16.
 
 import numpy as np
 from typing import List, Dict, Tuple, Any, Optional
-import torch
 import onnxruntime as ort
 from .affine_engine import AffineExpressionEngine, AffineExpression
 from .onnx_parser import ONNXParser
 from .bound_propagator import BoundPropagator
-from .relaxer import NonLinearRelaxer
+
 
 
 class PartialNetworkEvaluator:

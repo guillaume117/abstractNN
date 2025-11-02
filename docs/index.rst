@@ -29,7 +29,7 @@ AbstractNN Documentation
    :maxdepth: 2
    :caption: API Reference
 
-   api/modules
+   api/abstractnn
    api/affine_engine
    api/bound_propagator
    api/relaxer
@@ -42,7 +42,6 @@ AbstractNN Documentation
    :caption: Advanced Topics
 
    advanced/optimization
-   advanced/gpu_acceleration
    advanced/custom_layers
    advanced/troubleshooting
 

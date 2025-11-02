@@ -174,10 +174,10 @@ def evaluate():
     )
     
     parser.add_argument(
-        "--noise", "-n",
+        "--epsilon", "-e",
         type=float,
-        default=0.001,
-        help="Noise level epsilon (default: 0.05)"
+        default=0.01,
+        help="Perturbation radius (L-infinity norm)"
     )
     
     parser.add_argument(
@@ -186,12 +186,6 @@ def evaluate():
         help="Output JSON file (default: results.json)"
     )
     
-    parser.add_argument(
-        "--activation-relaxation",
-        default="linear",
-        choices=["linear", "quadratic"],
-        help="Activation relaxation type (default: linear)"
-    )
     
     parser.add_argument(
         "--device",
@@ -250,7 +244,7 @@ def evaluate():
     print(f"abstractNN Affine Evaluator v{__version__}")
     print(f"Model: {args.model}")
     print(f"Image: {args.image}")
-    print(f"Noise: {args.noise}")
+    print(f"Noise: {args.epsilon}")
     print(f"Device: {args.device}")
     print()
     
@@ -259,7 +253,7 @@ def evaluate():
         results = evaluate_model(
             model_path=str(model_path),
             input_image=str(image_path),
-            noise_level=args.noise,
+            noise_level=args.epsilon,
             activation_relaxation=args.activation_relaxation,
             device=args.device,
             enable_detailed_report=args.detailed_report

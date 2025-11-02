@@ -79,25 +79,25 @@ Architecture
 Core Components
 ---------------
 
-1. **Affine Engine** (:class:`~modules.affine_engine.AffineExpressionEngine`)
+1. **Affine Engine** (:class:`~abstractnn.affine_engine.AffineExpressionEngine`)
    
    - Manages symbolic expressions
    - Propagates through linear layers
    - Computes bounds efficiently
 
-2. **Bound Propagator** (:class:`~modules.bound_propagator.BoundPropagator`)
+2. **Bound Propagator** (:class:`~abstractnn.bound_propagator.BoundPropagator`)
    
    - Orchestrates layer-by-layer propagation
    - Handles layer type dispatch
    - Maintains symbolic state
 
-3. **Relaxer** (:class:`~modules.relaxer.NonLinearRelaxer`)
+3. **Relaxer** (:class:`~abstractnn.relaxer.NonLinearRelaxer`)
    
    - Approximates non-linear activations
    - Provides sound over-approximations
    - Multiple relaxation strategies
 
-4. **Soundness Checker** (:class:`~modules.soundness_checker.SoundnessChecker`)
+4. **Soundness Checker** (:class:`~abstractnn.soundness_checker.SoundnessChecker`)
    
    - Validates computed bounds
    - Monte Carlo comparison
@@ -114,7 +114,7 @@ Verify that a network's prediction remains stable under :math:`L_\infty` perturb
 .. code-block:: python
 
     # Check if prediction is robust to ε=0.01 perturbations
-    from modules.partial_evaluator import verify_partial_soundness
+    from abstractnn.partial_evaluator import verify_partial_soundness
     
     result = verify_partial_soundness(
         model_path='vgg16.onnx',
@@ -191,7 +191,7 @@ Comparison with Other Methods
      - ❌ Loose
      - ✅ High
      - ✅ Fast
-   * - **AbstracNN**
+   * - **AbstractNN**
      - ✅ Yes
      - ⚠️ Medium
      - ⚠️ Medium
@@ -211,7 +211,7 @@ Supported Architectures
 
 Currently optimized for:
 
-- CNNs (VGG, ResNet-style)
+- CNNs 
 - Feedforward networks
 - Limited RNN support
 
